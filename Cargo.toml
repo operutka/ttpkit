@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "ttpkit",
+    "ttpkit-url",
+    "ttpkit-utils",
+]
+resolver = "2"
