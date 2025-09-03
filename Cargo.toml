@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "ttpkit",
+    "ttpkit-auth",
     "ttpkit-url",
     "ttpkit-utils",
 ]
