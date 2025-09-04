@@ -4,12 +4,13 @@
 //! RTSP, SIP, etc.
 
 pub mod body;
+pub mod error;
 pub mod header;
 pub mod line;
 pub mod multipart;
 pub mod request;
 pub mod response;
 
-pub use ttpkit_utils::{self as utils, error::Error};
+pub use ttpkit_utils as utils;
 
-pub use crate::{body::Body, request::RequestHeader, response::ResponseHeader};
+pub use crate::{body::Body, error::Error, request::RequestHeader, response::ResponseHeader};

@@ -8,7 +8,7 @@ use bytes::{Bytes, BytesMut};
 use tokio_util::codec::{Decoder, Encoder};
 
 use crate::{
-    Error,
+    error::Error,
     header::{
         FieldIter, HeaderField, HeaderFieldDecoder, HeaderFieldEncoder, HeaderFieldValue,
         HeaderFields, Iter,
@@ -16,6 +16,9 @@ use crate::{
     line::{LineDecoder, LineDecoderOptions},
     utils::ascii::AsciiExt,
 };
+
+#[cfg(feature = "tokio-codec")]
+use crate::error::CodecError;
 
 /// Request path.
 #[derive(Debug, Clone)]
@@ -142,10 +145,17 @@ pub struct RequestHeaderBuilder<P = Bytes, V = Bytes, M = Bytes> {
 }
 
 impl<P, V, M> RequestHeaderBuilder<P, V, M> {
-    /// Set protocol version.
+    /// Set the protocol version.
     #[inline]
     pub fn set_version(mut self, version: V) -> Self {
         self.header.version = version;
+        self
+    }
+
+    /// Set the request method.
+    #[inline]
+    pub fn set_method(mut self, method: M) -> Self {
+        self.header.method = method;
         self
     }
 
@@ -164,6 +174,15 @@ impl<P, V, M> RequestHeaderBuilder<P, V, M> {
         T: Into<HeaderField>,
     {
         self.header.header_fields.add(field);
+        self
+    }
+
+    /// Remove all header fields with a given name.
+    pub fn remove_header_fields<N>(mut self, name: &N) -> Self
+    where
+        N: AsRef<[u8]> + ?Sized,
+    {
+        self.header.header_fields.remove(name);
         self
     }
 
@@ -423,7 +442,7 @@ where
     V: AsRef<[u8]>,
     M: AsRef<[u8]>,
 {
-    type Error = Error;
+    type Error = CodecError;
 
     #[inline]
     fn encode(
@@ -437,16 +456,16 @@ where
     }
 }
 
-/// Request decoder options.
+/// Request header decoder options.
 #[derive(Copy, Clone)]
-pub struct RequestDecoderOptions {
+pub struct RequestHeaderDecoderOptions {
     line_decoder_options: LineDecoderOptions,
     max_header_field_length: Option<usize>,
     max_header_fields: Option<usize>,
 }
 
-impl RequestDecoderOptions {
-    /// Create new request decoder options.
+impl RequestHeaderDecoderOptions {
+    /// Create new request header decoder options.
     ///
     /// By default only CRLF line endings are accepted, the maximum line length
     /// is 4096 bytes, the maximum header field length is 4096 bytes and the
@@ -497,7 +516,7 @@ impl RequestDecoderOptions {
     }
 }
 
-impl Default for RequestDecoderOptions {
+impl Default for RequestHeaderDecoderOptions {
     #[inline]
     fn default() -> Self {
         Self::new()
@@ -512,7 +531,7 @@ pub struct RequestHeaderDecoder<P, V, M> {
 
 impl<P, V, M> RequestHeaderDecoder<P, V, M> {
     /// Create a new request header decoder.
-    pub fn new(options: RequestDecoderOptions) -> Self {
+    pub fn new(options: RequestHeaderDecoderOptions) -> Self {
         Self {
             inner: InternalRequestHeaderDecoder::new(options),
             _pd: PhantomData,
@@ -571,16 +590,16 @@ where
     Error: From<M::Error>,
 {
     type Item = RequestHeader<P, V, M>;
-    type Error = Error;
+    type Error = CodecError;
 
     #[inline]
     fn decode(&mut self, buf: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
-        RequestHeaderDecoder::<P, V, M>::decode(self, buf)
+        RequestHeaderDecoder::<P, V, M>::decode(self, buf).map_err(CodecError::Other)
     }
 
     #[inline]
     fn decode_eof(&mut self, buf: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
-        RequestHeaderDecoder::<P, V, M>::decode_eof(self, buf)
+        RequestHeaderDecoder::<P, V, M>::decode_eof(self, buf).map_err(CodecError::Other)
     }
 }
 
@@ -594,7 +613,7 @@ struct InternalRequestHeaderDecoder {
 
 impl InternalRequestHeaderDecoder {
     /// Create a new request header decoder.
-    fn new(options: RequestDecoderOptions) -> Self {
+    fn new(options: RequestHeaderDecoderOptions) -> Self {
         Self {
             line_decoder: LineDecoder::new(options.line_decoder_options),
             header: None,

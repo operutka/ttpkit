@@ -5,7 +5,10 @@ use bytes::{Buf, BufMut, Bytes, BytesMut};
 #[cfg(feature = "tokio-codec")]
 use tokio_util::codec::Decoder;
 
-use crate::Error;
+use crate::error::Error;
+
+#[cfg(feature = "tokio-codec")]
+use crate::error::CodecError;
 
 /// Line decoder options.
 #[derive(Copy, Clone)]
@@ -130,10 +133,17 @@ impl LineDecoder {
         while let Some(first) = data.first() {
             if self.drop_lf {
                 self.drop_lf = false;
+
                 if *first == b'\n' {
                     data.advance(1);
-                    continue;
                 }
+
+                let len = self.buffer.len();
+                let line = self.buffer.split_to(len - 1);
+
+                self.buffer.clear();
+
+                return Ok(Some(line.freeze()));
             }
 
             if let Some(max_length) = self.options.max_line_length {
@@ -156,8 +166,16 @@ impl LineDecoder {
                 // the next byte if it's `b'\n'` because the `b"\r"` chunk may be just a prefix of
                 // a CRLF line separator and not consuming it would lead to an empty line being
                 // returned.
+                //
+                // Note that in order to prevent returning the line too early and passing the next
+                // byte to a subsequent decoder (if any) the line can be returned only after we
+                // know what the next byte is.
                 if self.options.crlf {
+                    // mark the state
                     self.drop_lf = true;
+
+                    // ... and check the next byte
+                    continue;
                 }
 
                 self.buffer.split_to(len - 1)
@@ -196,16 +214,16 @@ impl LineDecoder {
 #[cfg(feature = "tokio-codec")]
 impl Decoder for LineDecoder {
     type Item = Bytes;
-    type Error = Error;
+    type Error = CodecError;
 
     #[inline]
     fn decode(&mut self, data: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
-        LineDecoder::decode(self, data)
+        LineDecoder::decode(self, data).map_err(CodecError::Other)
     }
 
     #[inline]
     fn decode_eof(&mut self, data: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
-        LineDecoder::decode_eof(self, data)
+        LineDecoder::decode_eof(self, data).map_err(CodecError::Other)
     }
 }
 
@@ -309,19 +327,36 @@ mod tests {
 
         let mut data = BytesMut::from("foo\r");
 
+        let line = decoder.decode(&mut data).unwrap();
+
+        assert!(line.is_none());
+        assert!(data.is_empty());
+
+        data = BytesMut::from("\nbar\r");
+
         let line = decoder.decode(&mut data).unwrap().expect("line expected");
 
         assert_eq!(line.as_ref(), b"foo");
+        assert_eq!(data.as_ref(), b"bar\r");
+
+        let line = decoder.decode(&mut data).unwrap();
+
+        assert!(line.is_none());
         assert!(data.is_empty());
 
-        data = BytesMut::from("\nbar");
+        data = BytesMut::from("hello");
+
+        let line = decoder.decode(&mut data).unwrap().expect("line expected");
+
+        assert_eq!(line.as_ref(), b"bar");
+        assert_eq!(data.as_ref(), b"hello");
 
         let line = decoder
             .decode_eof(&mut data)
             .unwrap()
             .expect("line expected");
 
-        assert_eq!(line.as_ref(), b"bar");
+        assert_eq!(line.as_ref(), b"hello");
         assert!(data.is_empty());
     }
 

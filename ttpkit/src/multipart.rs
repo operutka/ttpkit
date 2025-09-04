@@ -6,7 +6,7 @@ use std::{
 };
 
 use bytes::{Bytes, BytesMut};
-use futures::{Stream, StreamExt, ready};
+use futures::{Stream, ready};
 
 #[cfg(feature = "tokio-codec")]
 use tokio_util::codec::Encoder;
@@ -14,7 +14,7 @@ use tokio_util::codec::Encoder;
 use crate::header::{HeaderField, HeaderFieldEncoder, HeaderFields};
 
 #[cfg(feature = "tokio-codec")]
-use crate::Error;
+use crate::error::CodecError;
 
 /// Multipart entity builder.
 pub struct MultipartEntityBuilder {
@@ -141,7 +141,7 @@ impl MultipartEntityEncoder {
 
 #[cfg(feature = "tokio-codec")]
 impl Encoder<&MultipartEntity> for MultipartEntityEncoder {
-    type Error = Error;
+    type Error = CodecError;
 
     #[inline]
     fn encode(&mut self, entity: &MultipartEntity, dst: &mut BytesMut) -> Result<(), Self::Error> {
@@ -151,12 +151,15 @@ impl Encoder<&MultipartEntity> for MultipartEntityEncoder {
     }
 }
 
-/// Multipart stream.
-pub struct MultipartStream<S, F> {
-    encoder: MultipartEntityEncoder,
-    buffer: BytesMut,
-    stream: Option<S>,
-    factory: F,
+pin_project_lite::pin_project! {
+    /// Multipart stream.
+    pub struct MultipartStream<S, F> {
+        encoder: MultipartEntityEncoder,
+        buffer: BytesMut,
+        #[pin]
+        stream: Option<S>,
+        factory: F,
+    }
 }
 
 impl<S, I, E, F> MultipartStream<S, F>
@@ -179,59 +182,48 @@ where
     }
 }
 
-impl<S, I, E, F> MultipartStream<S, F>
+impl<S, I, E, F> Stream for MultipartStream<S, F>
 where
     S: Stream<Item = Result<I, E>>,
     F: FnMut(I) -> MultipartEntity,
 {
-    /// Create a new entity from a given item.
-    fn create_entity(&mut self, item: I) -> MultipartEntity {
-        (self.factory)(item)
-    }
-}
-
-impl<S, I, E, F> Stream for MultipartStream<S, F>
-where
-    S: Stream<Item = Result<I, E>> + Unpin,
-    F: FnMut(I) -> MultipartEntity + Unpin,
-{
     type Item = Result<Bytes, E>;
 
-    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Option<Self::Item>> {
-        let this = &mut *self;
+    fn poll_next(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Option<Self::Item>> {
+        let mut this = self.project();
 
-        if let Some(stream) = this.stream.as_mut() {
-            match ready!(stream.poll_next_unpin(cx)) {
-                Some(Ok(item)) => {
-                    // create a new multipart entity
-                    let entity = this.create_entity(item);
+        let Some(stream) = this.stream.as_mut().as_pin_mut() else {
+            return Poll::Ready(None);
+        };
 
-                    this.encoder.encode_entity(&entity, &mut this.buffer);
+        match ready!(stream.poll_next(cx)) {
+            Some(Ok(item)) => {
+                // create a new multipart entity
+                let entity = (this.factory)(item);
 
-                    let encoded = this.buffer.split();
+                this.encoder.encode_entity(&entity, &mut this.buffer);
 
-                    Poll::Ready(Some(Ok(encoded.freeze())))
-                }
-                Some(Err(err)) => {
-                    // drop the stream
-                    this.stream = None;
+                let encoded = this.buffer.split();
 
-                    Poll::Ready(Some(Err(err)))
-                }
-                None => {
-                    // format the trailer part
-                    this.encoder.encode_trailer(&mut this.buffer);
-
-                    let trailer = this.buffer.split();
-
-                    // ... and drop the stream
-                    this.stream = None;
-
-                    Poll::Ready(Some(Ok(trailer.freeze())))
-                }
+                Poll::Ready(Some(Ok(encoded.freeze())))
             }
-        } else {
-            Poll::Ready(None)
+            Some(Err(err)) => {
+                // drop the stream
+                this.stream.set(None);
+
+                Poll::Ready(Some(Err(err)))
+            }
+            None => {
+                // format the trailer part
+                this.encoder.encode_trailer(&mut this.buffer);
+
+                let trailer = this.buffer.split();
+
+                // ... and drop the stream
+                this.stream.set(None);
+
+                Poll::Ready(Some(Ok(trailer.freeze())))
+            }
         }
     }
 }

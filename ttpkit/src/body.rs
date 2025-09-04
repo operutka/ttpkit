@@ -10,7 +10,7 @@ use bytes::{Bytes, BytesMut};
 use futures::{Stream, StreamExt, ready};
 
 use crate::{
-    Error,
+    error::Error,
     line::{LineDecoder, LineDecoderOptions},
     utils::num::{self, HexEncoder},
 };
@@ -169,7 +169,7 @@ impl From<String> for Body {
 }
 
 impl Stream for Body {
-    type Item = Result<Bytes, io::Error>;
+    type Item = io::Result<Bytes>;
 
     #[inline]
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
@@ -360,13 +360,13 @@ impl ChunkedBodyDecoder {
     ///
     /// * `max_line_length` - maximum length of a single chunk header line
     #[inline]
-    pub fn new(max_line_length: usize) -> Self {
+    pub fn new(max_line_length: Option<usize>) -> Self {
         let options = LineDecoderOptions::new()
             .cr(false)
             .lf(false)
             .crlf(true)
             .require_terminator(false)
-            .max_line_length(Some(max_line_length));
+            .max_line_length(max_line_length);
 
         let decoder = LineDecoder::new(options);
 
@@ -480,11 +480,14 @@ impl MessageBodyDecoder for ChunkedBodyDecoder {
     }
 }
 
-/// Wrapper around a `Byte` stream that will make it chunk-encoded.
-pub struct ChunkedStream<S> {
-    stream: Option<S>,
-    chunk_buffer: BytesMut,
-    hex_encoder: HexEncoder,
+pin_project_lite::pin_project! {
+    /// Wrapper around a `Byte` stream that will make it chunk-encoded.
+    pub struct ChunkedStream<S> {
+        #[pin]
+        stream: Option<S>,
+        chunk_buffer: BytesMut,
+        hex_encoder: HexEncoder,
+    }
 }
 
 impl<S> ChunkedStream<S> {
@@ -500,18 +503,18 @@ impl<S> ChunkedStream<S> {
 
 impl<S, E> Stream for ChunkedStream<S>
 where
-    S: Stream<Item = Result<Bytes, E>> + Unpin,
+    S: Stream<Item = Result<Bytes, E>>,
 {
     type Item = Result<Bytes, E>;
 
-    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        let this = &mut *self;
+    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+        let mut this = self.project();
 
-        let Some(stream) = this.stream.as_mut() else {
+        let Some(stream) = this.stream.as_mut().as_pin_mut() else {
             return Poll::Ready(None);
         };
 
-        match ready!(stream.poll_next_unpin(cx)) {
+        match ready!(stream.poll_next(cx)) {
             Some(Ok(data)) => {
                 let encoded_size = this.hex_encoder.encode(data.len());
 
@@ -530,7 +533,7 @@ where
             }
             Some(Err(err)) => {
                 // drop the stream
-                this.stream = None;
+                this.stream.set(None);
 
                 Poll::Ready(Some(Err(err)))
             }
@@ -539,7 +542,7 @@ where
                 let chunk = Bytes::from("0\r\n\r\n");
 
                 // ... and drop the stream
-                this.stream = None;
+                this.stream.set(None);
 
                 Poll::Ready(Some(Ok(chunk)))
             }
@@ -652,7 +655,7 @@ mod tests {
 
         let mut data = BytesMut::from(data.as_str());
 
-        let mut decoder = ChunkedBodyDecoder::new(256);
+        let mut decoder = ChunkedBodyDecoder::new(Some(256));
 
         assert!(!decoder.is_complete());
 
@@ -695,7 +698,7 @@ mod tests {
     fn test_chunked_decoder_on_ivalid_chunk_size() {
         let mut data = BytesMut::from("ggg\r\n0123456789\r\n0\r\n\r\n");
 
-        let mut decoder = ChunkedBodyDecoder::new(256);
+        let mut decoder = ChunkedBodyDecoder::new(Some(256));
 
         let res = decoder.decode(&mut data);
 
@@ -706,7 +709,7 @@ mod tests {
     fn test_chunked_body_decoder_on_line_length_exceeded() {
         let mut data = BytesMut::from("5;very_long_attribute=val\r\n01234\r\n0\r\n\r\n");
 
-        let mut decoder = ChunkedBodyDecoder::new(5);
+        let mut decoder = ChunkedBodyDecoder::new(Some(5));
 
         let res = decoder.decode(&mut data);
 

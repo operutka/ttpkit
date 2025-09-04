@@ -10,7 +10,7 @@ use std::{
 use bytes::{Bytes, BytesMut};
 
 use crate::{
-    Error,
+    error::Error,
     utils::{ascii::AsciiExt, num::DecEncoder},
 };
 

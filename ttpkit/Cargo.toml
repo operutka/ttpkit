@@ -10,6 +10,7 @@ tokio-codec = ["tokio-util/codec"]
 [dependencies]
 bytes = "1"
 futures = "0.3"
+pin-project-lite = "0.2"
 
 [dependencies.tokio-util]
 version = "0.7"
