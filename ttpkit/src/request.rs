@@ -159,6 +159,13 @@ impl<P, V, M> RequestHeaderBuilder<P, V, M> {
         self
     }
 
+    /// Set the request path.
+    #[inline]
+    pub fn set_path(mut self, path: RequestPath) -> Self {
+        self.header.path = path;
+        self
+    }
+
     /// Replace the current header fields having the same name (if any).
     pub fn set_header_field<T>(mut self, field: T) -> Self
     where
