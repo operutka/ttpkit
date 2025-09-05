@@ -1,0 +1,37 @@
+[package]
+name = "ttpkit-http"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+#default = []
+default = ["client", "server"]
+client = []
+server = []
+
+[dependencies]
+bytes = "1"
+futures = "0.3"
+log = "0.4"
+trait-variant = "0.1"
+
+[dependencies.tokio]
+version = "1"
+features = ["net", "rt", "time"]
+
+[dependencies.tokio-util]
+version = "0.7"
+features = ["codec"]
+
+[dependencies.ttpkit]
+path = "../ttpkit"
+features = ["tokio-codec"]
+
+[dependencies.ttpkit-io]
+path = "../ttpkit-io"
+
+[dependencies.ttpkit-url]
+path = "../ttpkit-url"
+
+[dependencies.ttpkit-utils]
+path = "../ttpkit-utils"
