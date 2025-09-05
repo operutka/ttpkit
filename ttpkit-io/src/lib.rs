@@ -199,7 +199,7 @@ where
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
         bufs: &[IoSlice<'_>],
-    ) -> Poll<Result<usize, io::Error>> {
+    ) -> Poll<io::Result<usize>> {
         let this = self.project();
 
         let res = this.inner.poll_write_vectored(cx, bufs);
@@ -213,6 +213,7 @@ where
         res
     }
 
+    #[inline]
     fn is_write_vectored(&self) -> bool {
         self.inner.is_write_vectored()
     }
@@ -363,27 +364,32 @@ where
         mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,
         buf: &[u8],
-    ) -> Poll<Result<usize, io::Error>> {
-        let pinned = Pin::new(&mut self.inner);
-
-        pinned.poll_write(cx, buf)
+    ) -> Poll<io::Result<usize>> {
+        AsyncWrite::poll_write(Pin::new(&mut self.inner), cx, buf)
     }
 
     #[inline]
-    fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), io::Error>> {
-        let pinned = Pin::new(&mut self.inner);
-
-        pinned.poll_flush(cx)
+    fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        AsyncWrite::poll_flush(Pin::new(&mut self.inner), cx)
     }
 
     #[inline]
-    fn poll_shutdown(
+    fn poll_shutdown(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        AsyncWrite::poll_shutdown(Pin::new(&mut self.inner), cx)
+    }
+
+    #[inline]
+    fn poll_write_vectored(
         mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,
-    ) -> Poll<Result<(), io::Error>> {
-        let pinned = Pin::new(&mut self.inner);
+        bufs: &[IoSlice<'_>],
+    ) -> Poll<io::Result<usize>> {
+        AsyncWrite::poll_write_vectored(Pin::new(&mut self.inner), cx, bufs)
+    }
 
-        pinned.poll_shutdown(cx)
+    #[inline]
+    fn is_write_vectored(&self) -> bool {
+        self.inner.is_write_vectored()
     }
 }
 
@@ -403,7 +409,7 @@ impl AsyncRead for Upgraded {
         mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,
         buf: &mut ReadBuf<'_>,
-    ) -> Poll<Result<(), io::Error>> {
+    ) -> Poll<io::Result<()>> {
         if !self.buffer.is_empty() {
             // always read the data from the internal buffer first
             self.buffer.read(buf);
@@ -423,27 +429,18 @@ impl AsyncWrite for Upgraded {
         mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,
         buf: &[u8],
-    ) -> Poll<Result<usize, io::Error>> {
-        let pinned = Pin::new(&mut self.inner);
-
-        pinned.poll_write(cx, buf)
+    ) -> Poll<io::Result<usize>> {
+        AsyncWrite::poll_write(Pin::new(&mut self.inner), cx, buf)
     }
 
     #[inline]
-    fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), io::Error>> {
-        let pinned = Pin::new(&mut self.inner);
-
-        pinned.poll_flush(cx)
+    fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        AsyncWrite::poll_flush(Pin::new(&mut self.inner), cx)
     }
 
     #[inline]
-    fn poll_shutdown(
-        mut self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-    ) -> Poll<Result<(), io::Error>> {
-        let pinned = Pin::new(&mut self.inner);
-
-        pinned.poll_shutdown(cx)
+    fn poll_shutdown(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        AsyncWrite::poll_shutdown(Pin::new(&mut self.inner), cx)
     }
 
     #[inline]
@@ -451,10 +448,8 @@ impl AsyncWrite for Upgraded {
         mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,
         bufs: &[IoSlice<'_>],
-    ) -> Poll<Result<usize, io::Error>> {
-        let pinned = Pin::new(&mut self.inner);
-
-        pinned.poll_write_vectored(cx, bufs)
+    ) -> Poll<io::Result<usize>> {
+        AsyncWrite::poll_write_vectored(Pin::new(&mut self.inner), cx, bufs)
     }
 
     #[inline]

@@ -19,7 +19,7 @@ pub enum CodecError {
 impl Display for CodecError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Self::IO(err) => write!(f, "IO: {}", err),
+            Self::IO(err) => write!(f, "IO: {err}"),
             Self::Other(err) => Display::fmt(err, f),
         }
     }

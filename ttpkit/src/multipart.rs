@@ -201,7 +201,7 @@ where
                 // create a new multipart entity
                 let entity = (this.factory)(item);
 
-                this.encoder.encode_entity(&entity, &mut this.buffer);
+                this.encoder.encode_entity(&entity, this.buffer);
 
                 let encoded = this.buffer.split();
 
@@ -215,7 +215,7 @@ where
             }
             None => {
                 // format the trailer part
-                this.encoder.encode_trailer(&mut this.buffer);
+                this.encoder.encode_trailer(this.buffer);
 
                 let trailer = this.buffer.split();
 
