@@ -1,19 +1,20 @@
 //! Response types.
 
 use bytes::BytesMut;
-use tokio_util::codec::Encoder;
+use tokio_util::codec::{Decoder, Encoder};
 use ttpkit::{
     header::{FieldIter, HeaderField, HeaderFieldValue, Iter},
     response::{
         ResponseHeader as GenericResponseHeader,
         ResponseHeaderBuilder as GenericResponseHeaderBuilder,
+        ResponseHeaderDecoder as GenericResponseHeaderDecoder,
         ResponseHeaderEncoder as GenericResponseHeaderEncoder, Status as GenericStatus,
     },
 };
 
 use crate::{CodecError, Protocol, Version};
 
-pub use ttpkit::response::StatusMessage;
+pub use ttpkit::response::{ResponseHeaderDecoderOptions, StatusMessage};
 
 /// HTTP response status.
 #[repr(transparent)]
@@ -316,6 +317,59 @@ impl<B> Response<B> {
     #[inline]
     pub fn deconstruct(self) -> (ResponseHeader, B) {
         (self.header, self.body)
+    }
+}
+
+/// Response header decoder.
+pub struct ResponseHeaderDecoder {
+    inner: GenericResponseHeaderDecoder<Protocol, Version>,
+}
+
+impl ResponseHeaderDecoder {
+    /// Create a new decoder.
+    #[inline]
+    pub fn new(options: ResponseHeaderDecoderOptions) -> Self {
+        Self {
+            inner: GenericResponseHeaderDecoder::new(options),
+        }
+    }
+
+    /// Reset the decoder and make it ready for parsing a new response header.
+    #[inline]
+    pub fn reset(&mut self) {
+        self.inner.reset();
+    }
+
+    /// Decode a given response header chunk.
+    pub fn decode(&mut self, data: &mut BytesMut) -> Result<Option<ResponseHeader>, CodecError> {
+        let res = self.inner.decode(data)?.map(ResponseHeader::new);
+
+        Ok(res)
+    }
+
+    /// Decode a given response header chunk at the end of the stream.
+    pub fn decode_eof(
+        &mut self,
+        data: &mut BytesMut,
+    ) -> Result<Option<ResponseHeader>, CodecError> {
+        let res = self.inner.decode_eof(data)?.map(ResponseHeader::new);
+
+        Ok(res)
+    }
+}
+
+impl Decoder for ResponseHeaderDecoder {
+    type Item = ResponseHeader;
+    type Error = CodecError;
+
+    #[inline]
+    fn decode(&mut self, buf: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
+        Self::decode(self, buf)
+    }
+
+    #[inline]
+    fn decode_eof(&mut self, buf: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
+        Self::decode_eof(self, buf)
     }
 }
 

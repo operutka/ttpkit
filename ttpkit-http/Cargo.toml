@@ -4,24 +4,55 @@ version = "0.1.0"
 edition = "2024"
 
 [features]
-#default = []
-default = ["client", "server"]
-client = []
-server = []
+default = []
+server = ["dep:log", "dep:futures", "dep:tokio", "dep:trait-variant", "dep:ttpkit-io", "dep:ttpkit-url"]
+client = ["dep:futures", "dep:tokio", "dep:ttpkit-io", "dep:ttpkit-url"]
+tls-client = ["client", "openssl", "dep:tokio-openssl"]
+ws = ["dep:base64", "dep:futures", "dep:rand", "dep:sha-1", "dep:tokio", "dep:ttpkit-io"]
 
 [dependencies]
 bytes = "1"
-futures = "0.3"
-log = "0.4"
-trait-variant = "0.1"
+
+[dependencies.base64]
+version = "0.22"
+optional = true
+
+[dependencies.futures]
+version = "0.3"
+optional = true
+
+[dependencies.log]
+version = "0.4"
+optional = true
+
+[dependencies.openssl]
+version = "0.10"
+optional = true
+
+[dependencies.rand]
+version = "0.9"
+optional = true
+
+[dependencies.sha-1]
+version = "0.10"
+optional = true
 
 [dependencies.tokio]
 version = "1"
 features = ["net", "rt", "time"]
+optional = true
+
+[dependencies.tokio-openssl]
+version = "0.6"
+optional = true
 
 [dependencies.tokio-util]
 version = "0.7"
 features = ["codec"]
+
+[dependencies.trait-variant]
+version = "0.1"
+optional = true
 
 [dependencies.ttpkit]
 path = "../ttpkit"
@@ -29,9 +60,8 @@ features = ["tokio-codec"]
 
 [dependencies.ttpkit-io]
 path = "../ttpkit-io"
+optional = true
 
 [dependencies.ttpkit-url]
 path = "../ttpkit-url"
-
-[dependencies.ttpkit-utils]
-path = "../ttpkit-utils"
+optional = true

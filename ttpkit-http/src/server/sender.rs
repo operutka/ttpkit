@@ -96,7 +96,9 @@ impl<IO> ResponsePipeline<IO> {
         self.sender.close_channel();
 
         // ... and wait for the task
-        self.task.await.unwrap()
+        self.task
+            .await
+            .map_err(|_| Error::from_static_msg("interrupted"))?
     }
 }
 

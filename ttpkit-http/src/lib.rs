@@ -4,17 +4,20 @@
 #[macro_use]
 extern crate log;
 
+#[cfg(feature = "openssl")]
+mod tls;
+
 pub mod request;
 pub mod response;
 
-//#[cfg(feature = "client")]
-//pub mod client;
+#[cfg(feature = "client")]
+pub mod client;
 
 #[cfg(feature = "server")]
 pub mod server;
 
-//#[cfg(feature = "ws")]
-//pub mod ws;
+#[cfg(feature = "ws")]
+pub mod ws;
 
 use std::{
     fmt::{self, Display, Formatter},
@@ -23,7 +26,7 @@ use std::{
 };
 
 use bytes::Bytes;
-use ttpkit_utils::error::Error as BaseError;
+use ttpkit::Error as BaseError;
 
 #[cfg(feature = "server")]
 use self::server::OutgoingResponse;
@@ -31,7 +34,6 @@ use self::server::OutgoingResponse;
 pub use ttpkit::{self, body::Body, error::CodecError};
 
 pub use self::{
-    //generic::connection::Upgraded,
     request::{Request, RequestHeader},
     response::{Response, ResponseHeader, Status},
 };

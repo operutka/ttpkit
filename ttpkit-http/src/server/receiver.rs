@@ -11,10 +11,7 @@ use futures::{
     FutureExt, SinkExt, Stream, StreamExt,
     channel::{mpsc, oneshot},
 };
-use tokio::{
-    io::{AsyncRead, AsyncWrite},
-    task::JoinHandle,
-};
+use tokio::{io::AsyncRead, task::JoinHandle};
 use tokio_util::codec::{Decoder, FramedRead};
 use ttpkit::body::{Body, ChunkedBodyDecoder, FixedSizeBodyDecoder, MessageBodyDecoder};
 use ttpkit_io::ConnectionReader;
@@ -122,7 +119,7 @@ impl RequestDecoder {
     /// Decode the next request.
     pub async fn decode<IO>(self, connection: ConnectionReader<IO>) -> RequestDecoderResult<IO>
     where
-        IO: AsyncRead + AsyncWrite + Unpin + Send + 'static,
+        IO: AsyncRead + Send + 'static,
     {
         let (header, connection) = match self.decode_header(connection).await {
             Ok((header, connection)) => (header, connection),
@@ -187,7 +184,7 @@ impl RequestDecoder {
         connection: ConnectionReader<IO>,
     ) -> Result<(RequestHeader, ConnectionReader<IO>), HeaderDecodingError>
     where
-        IO: AsyncRead + AsyncWrite + Unpin + Send + 'static,
+        IO: AsyncRead,
     {
         let header_decoder = RequestHeaderDecoder::new(self.options.header_decoder_options);
 
@@ -212,9 +209,9 @@ impl RequestDecoder {
 
         let chunk = buffer.split();
 
-        let connection = header_decoder.into_inner().prepend(chunk.freeze());
+        let connection = header_decoder.into_inner();
 
-        Ok((header, connection))
+        Ok((header, connection.prepend(chunk.freeze())))
     }
 }
 
@@ -286,7 +283,7 @@ struct RequestBodyReader<IO> {
 
 impl<IO> RequestBodyReader<IO>
 where
-    IO: AsyncRead + AsyncWrite + Unpin,
+    IO: AsyncRead,
 {
     /// Create a new request body reader.
     fn new(
@@ -321,15 +318,15 @@ impl<IO> RequestBodyReader<IO> {
 
         let chunk = buffer.split();
 
-        let connection = self.source.into_inner().prepend(chunk.freeze());
+        let connection = self.source.into_inner();
 
-        Some(connection)
+        Some(connection.prepend(chunk.freeze()))
     }
 }
 
 impl<IO> RequestBodyReader<IO>
 where
-    IO: AsyncRead + Unpin + Send + 'static,
+    IO: AsyncRead + Send + 'static,
 {
     /// Spawn the reader as a separate task and return the join handle.
     fn spawn(mut self) -> JoinHandle<Option<ConnectionReader<IO>>> {
@@ -356,7 +353,7 @@ where
 
 impl<IO> Stream for RequestBodyReader<IO>
 where
-    IO: AsyncRead + Unpin,
+    IO: AsyncRead,
 {
     type Item = io::Result<Bytes>;
 

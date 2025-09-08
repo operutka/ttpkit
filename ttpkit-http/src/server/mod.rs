@@ -110,50 +110,69 @@ impl ServerBuilder {
     /// Create a new builder.
     #[inline]
     const fn new() -> Self {
-        Self {
-            options: ServerOptions::new(),
-        }
+        let request_decoder_options = RequestDecoderOptions::new()
+            .max_line_length(Some(1024))
+            .max_header_field_length(Some(1024))
+            .max_header_fields(Some(64))
+            .request_header_timeout(Some(Duration::from_secs(60)));
+
+        let options = ServerOptions {
+            max_connections: 100,
+            max_requests: 100,
+            read_timeout: Some(Duration::from_secs(60)),
+            write_timeout: Some(Duration::from_secs(60)),
+            request_decoder_options,
+        };
+
+        Self { options }
     }
 
     /// Set maximum number of concurrent connections.
     #[inline]
     pub const fn max_concurrent_connections(mut self, max: u32) -> Self {
-        self.options = self.options.max_concurrent_connections(max);
+        self.options.max_connections = max;
         self
     }
 
     /// Set maximum number of concurrent requests per connection.
     #[inline]
     pub const fn max_concurrent_requests(mut self, max: u32) -> Self {
-        self.options = self.options.max_concurrent_requests(max);
+        self.options.max_requests = max;
         self
     }
 
     /// Set connection read timeout.
     #[inline]
     pub const fn read_timeout(mut self, timeout: Option<Duration>) -> Self {
-        self.options = self.options.read_timeout(timeout);
+        self.options.read_timeout = timeout;
         self
     }
 
     /// Set connection write timeout.
     #[inline]
     pub const fn write_timeout(mut self, timeout: Option<Duration>) -> Self {
-        self.options = self.options.write_timeout(timeout);
+        self.options.write_timeout = timeout;
         self
     }
 
     /// Set maximum length of a request header line.
     #[inline]
     pub const fn max_line_length(mut self, max_length: Option<usize>) -> Self {
-        self.options = self.options.max_line_length(max_length);
+        self.options.request_decoder_options = self
+            .options
+            .request_decoder_options
+            .max_line_length(max_length);
+
         self
     }
 
     /// Set maximum length of a request header field.
     #[inline]
     pub const fn max_header_field_length(mut self, max_length: Option<usize>) -> Self {
-        self.options = self.options.max_header_field_length(max_length);
+        self.options.request_decoder_options = self
+            .options
+            .request_decoder_options
+            .max_header_field_length(max_length);
 
         self
     }
@@ -161,14 +180,22 @@ impl ServerBuilder {
     /// Set maximum number of request header fields.
     #[inline]
     pub const fn max_header_fields(mut self, max_fields: Option<usize>) -> Self {
-        self.options = self.options.max_header_fields(max_fields);
+        self.options.request_decoder_options = self
+            .options
+            .request_decoder_options
+            .max_header_fields(max_fields);
+
         self
     }
 
     /// Set timeout for receiving a complete request header.
     #[inline]
     pub const fn request_header_timeout(mut self, timeout: Option<Duration>) -> Self {
-        self.options = self.options.request_header_timeout(timeout);
+        self.options.request_decoder_options = self
+            .options
+            .request_decoder_options
+            .request_header_timeout(timeout);
+
         self
     }
 
@@ -189,85 +216,6 @@ struct ServerOptions {
     read_timeout: Option<Duration>,
     write_timeout: Option<Duration>,
     request_decoder_options: RequestDecoderOptions,
-}
-
-impl ServerOptions {
-    /// Create default server options.
-    #[inline]
-    const fn new() -> Self {
-        let request_decoder_options = RequestDecoderOptions::new()
-            .max_line_length(Some(1024))
-            .max_header_field_length(Some(1024))
-            .max_header_fields(Some(64))
-            .request_header_timeout(Some(Duration::from_secs(60)));
-
-        Self {
-            max_connections: 100,
-            max_requests: 100,
-            read_timeout: Some(Duration::from_secs(60)),
-            write_timeout: Some(Duration::from_secs(60)),
-            request_decoder_options,
-        }
-    }
-
-    /// Set maximum number of concurrent connections.
-    #[inline]
-    const fn max_concurrent_connections(mut self, max: u32) -> Self {
-        self.max_connections = max;
-        self
-    }
-
-    /// Set maximum number of concurrent requests per connection.
-    #[inline]
-    const fn max_concurrent_requests(mut self, max: u32) -> Self {
-        self.max_requests = max;
-        self
-    }
-
-    /// Set connection read timeout.
-    #[inline]
-    const fn read_timeout(mut self, timeout: Option<Duration>) -> Self {
-        self.read_timeout = timeout;
-        self
-    }
-
-    /// Set connection write timeout.
-    #[inline]
-    const fn write_timeout(mut self, timeout: Option<Duration>) -> Self {
-        self.write_timeout = timeout;
-        self
-    }
-
-    /// Set maximum length of a request header line.
-    #[inline]
-    const fn max_line_length(mut self, max_length: Option<usize>) -> Self {
-        self.request_decoder_options = self.request_decoder_options.max_line_length(max_length);
-        self
-    }
-
-    /// Set maximum length of a request header field.
-    #[inline]
-    const fn max_header_field_length(mut self, max_length: Option<usize>) -> Self {
-        self.request_decoder_options = self
-            .request_decoder_options
-            .max_header_field_length(max_length);
-
-        self
-    }
-
-    /// Set maximum number of request header fields.
-    #[inline]
-    const fn max_header_fields(mut self, max_fields: Option<usize>) -> Self {
-        self.request_decoder_options = self.request_decoder_options.max_header_fields(max_fields);
-        self
-    }
-
-    /// Set timeout for receiving a complete request header.
-    #[inline]
-    const fn request_header_timeout(mut self, timeout: Option<Duration>) -> Self {
-        self.request_decoder_options = self.request_decoder_options.request_header_timeout(timeout);
-        self
-    }
 }
 
 /// HTTP server.
