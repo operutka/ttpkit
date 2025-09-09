@@ -3,7 +3,6 @@ members = [
     "ttpkit",
     "ttpkit-auth",
     "ttpkit-http",
-    "ttpkit-io",
     "ttpkit-url",
     "ttpkit-utils",
 ]

@@ -2,12 +2,10 @@
 
 use std::{borrow::Borrow, net::SocketAddr, ops::Deref};
 
-use ttpkit::body::Body;
-use ttpkit_url::{IntoUrl, QueryDict, Url};
-
 use crate::{
-    Error, Scheme,
+    Body, Error, Scheme,
     request::{Request, RequestHeader},
+    url::{IntoUrl, QueryDict, Url},
 };
 
 /// Request received from an HTTP client.

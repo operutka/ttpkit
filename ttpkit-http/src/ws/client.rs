@@ -1,10 +1,9 @@
 use std::fmt::Write;
 
-use ttpkit_url::Url;
-
 use crate::{
     Body, Error, Version,
     client::{IncomingResponse, OutgoingRequest},
+    url::Url,
     ws::{AgentRole, WebSocket},
 };
 

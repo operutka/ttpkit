@@ -2,18 +2,18 @@
 
 use bytes::BytesMut;
 use tokio_util::codec::{Decoder, Encoder};
-use ttpkit::{
+
+use crate::{
+    CodecError, Method, Protocol, Version,
     header::{FieldIter, HeaderField, HeaderFieldValue, Iter},
-    request::{
+    ttpkit::request::{
         RequestHeader as GenericRequestHeader, RequestHeaderBuilder as GenericRequestHeaderBuilder,
         RequestHeaderDecoder as GenericRequestHeaderDecoder,
         RequestHeaderEncoder as GenericRequestHeaderEncoder,
     },
 };
 
-use crate::{CodecError, Method, Protocol, Version};
-
-pub use ttpkit::request::{RequestHeaderDecoderOptions, RequestPath};
+pub use crate::ttpkit::request::{RequestHeaderDecoderOptions, RequestPath};
 
 /// HTTP request header.
 #[derive(Clone)]

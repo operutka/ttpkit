@@ -19,6 +19,15 @@ pub mod server;
 #[cfg(feature = "ws")]
 pub mod ws;
 
+#[cfg(any(feature = "client", feature = "server", feature = "ws"))]
+/// Connection abstractions.
+pub mod connection {
+    pub use ttpkit_utils::io::{
+        Connection, ConnectionBuilder, ConnectionReader, ConnectionWriter, UpgradeFuture,
+        UpgradeRequest, Upgraded,
+    };
+}
+
 use std::{
     fmt::{self, Display, Formatter},
     io,
@@ -31,7 +40,15 @@ use ttpkit::Error as BaseError;
 #[cfg(feature = "server")]
 use self::server::OutgoingResponse;
 
-pub use ttpkit::{self, body::Body, error::CodecError};
+pub use ttpkit::{
+    self,
+    body::{self, Body},
+    error::CodecError,
+    header,
+};
+
+#[cfg(any(feature = "client", feature = "server"))]
+pub use ttpkit_url as url;
 
 pub use self::{
     request::{Request, RequestHeader},
@@ -201,6 +218,23 @@ impl AsRef<[u8]> for Version {
     }
 }
 
+impl AsRef<str> for Version {
+    #[inline]
+    fn as_ref(&self) -> &str {
+        match *self {
+            Self::Version10 => "1.0",
+            Self::Version11 => "1.1",
+        }
+    }
+}
+
+impl Display for Version {
+    #[inline]
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        f.write_str(self.as_ref())
+    }
+}
+
 impl TryFrom<Bytes> for Version {
     type Error = Error;
 
@@ -240,6 +274,29 @@ impl AsRef<[u8]> for Method {
             Self::Trace => b"TRACE",
             Self::Connect => b"CONNECT",
         }
+    }
+}
+
+impl AsRef<str> for Method {
+    #[inline]
+    fn as_ref(&self) -> &str {
+        match *self {
+            Self::Options => "OPTIONS",
+            Self::Head => "HEAD",
+            Self::Get => "GET",
+            Self::Post => "POST",
+            Self::Put => "PUT",
+            Self::Delete => "DELETE",
+            Self::Trace => "TRACE",
+            Self::Connect => "CONNECT",
+        }
+    }
+}
+
+impl Display for Method {
+    #[inline]
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        f.write_str(self.as_ref())
     }
 }
 

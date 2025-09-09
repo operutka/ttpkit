@@ -5,10 +5,10 @@ edition = "2024"
 
 [features]
 default = []
-server = ["dep:log", "dep:futures", "dep:tokio", "dep:trait-variant", "dep:ttpkit-io", "dep:ttpkit-url"]
-client = ["dep:futures", "dep:tokio", "dep:ttpkit-io", "dep:ttpkit-url"]
+server = ["dep:log", "dep:futures", "dep:tokio", "dep:trait-variant", "dep:ttpkit-url", "dep:ttpkit-utils"]
+client = ["dep:futures", "dep:tokio", "dep:ttpkit-url", "dep:ttpkit-utils"]
 tls-client = ["client", "openssl", "dep:tokio-openssl"]
-ws = ["dep:base64", "dep:futures", "dep:rand", "dep:sha-1", "dep:tokio", "dep:ttpkit-io"]
+ws = ["dep:base64", "dep:futures", "dep:rand", "dep:sha-1", "dep:tokio", "dep:ttpkit-utils"]
 
 [dependencies]
 bytes = "1"
@@ -58,10 +58,11 @@ optional = true
 path = "../ttpkit"
 features = ["tokio-codec"]
 
-[dependencies.ttpkit-io]
-path = "../ttpkit-io"
-optional = true
-
 [dependencies.ttpkit-url]
 path = "../ttpkit-url"
+optional = true
+
+[dependencies.ttpkit-utils]
+path = "../ttpkit-utils"
+features = ["io"]
 optional = true

@@ -3,7 +3,24 @@ name = "ttpkit-utils"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+default = []
+io = ["dep:futures", "dep:pin-project-lite", "dep:tokio"]
+
 [dependencies]
 atoi = "2"
 bytes = "1"
 itoa = "1"
+
+[dependencies.futures]
+version = "0.3"
+optional = true
+
+[dependencies.pin-project-lite]
+version = "0.2"
+optional = true
+
+[dependencies.tokio]
+version = "1"
+features = ["io-util", "time"]
+optional = true

@@ -2,14 +2,12 @@
 
 use std::{borrow::Borrow, ops::Deref};
 
-use ttpkit::header::{HeaderField, HeaderFieldValue};
-
 use crate::{
     Body, Status,
+    connection::{UpgradeFuture, UpgradeRequest},
+    header::{HeaderField, HeaderFieldValue},
     response::{Response, ResponseBuilder, ResponseHeader},
 };
-
-pub use ttpkit_io::{UpgradeFuture, UpgradeRequest, Upgraded};
 
 /// Builder for outgoing HTTP responses.
 pub struct OutgoingResponseBuilder {

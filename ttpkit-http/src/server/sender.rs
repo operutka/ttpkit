@@ -17,11 +17,11 @@ use tokio::{
     io::{AsyncWrite, AsyncWriteExt},
     task::JoinHandle,
 };
-use ttpkit::body::ChunkedStream;
-use ttpkit_io::ConnectionWriter;
 
 use crate::{
-    Body, Error, Version,
+    Error, Version,
+    body::{Body, ChunkedStream},
+    connection::ConnectionWriter,
     response::{ResponseBuilder, ResponseHeaderEncoder},
     server::response::OutgoingResponse,
 };

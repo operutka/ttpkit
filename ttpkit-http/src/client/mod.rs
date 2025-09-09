@@ -17,13 +17,13 @@ use std::{
 use bytes::BytesMut;
 use futures::{FutureExt, StreamExt, ready};
 use tokio::io::AsyncWriteExt;
-use ttpkit::body::ChunkedStream;
-use ttpkit_io::{Connection as HttpConnection, ConnectionReader, ConnectionWriter};
-use ttpkit_url::Url;
 
 use crate::{
-    Body, Error, Version,
+    Error, Version,
+    body::{Body, ChunkedStream},
+    connection::{Connection as HttpConnection, ConnectionReader, ConnectionWriter},
     request::{RequestHeader, RequestHeaderEncoder},
+    url::Url,
 };
 
 use self::receiver::{ConnectionReaderJoinHandle, ResponseDecoder, ResponseDecoderOptions};

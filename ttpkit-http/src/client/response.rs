@@ -2,9 +2,7 @@
 
 use std::ops::Deref;
 
-use ttpkit_io::Upgraded;
-
-use crate::{Body, Response, ResponseHeader};
+use crate::{Body, Response, ResponseHeader, connection::Upgraded};
 
 /// Incoming HTTP response.
 pub struct IncomingResponse<B = Body> {

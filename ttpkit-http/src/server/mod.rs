@@ -14,7 +14,6 @@ use tokio::{
     net::{TcpListener, TcpStream},
     sync::Semaphore,
 };
-use ttpkit_io::{ConnectionReader, UpgradeRequest};
 
 use self::{
     receiver::{
@@ -24,7 +23,10 @@ use self::{
     sender::{CloseConnectionFuture, CloseConnectionResolver, ResponsePipeline},
 };
 
-use crate::{Error, Scheme, Status, Version};
+use crate::{
+    Error, Scheme, Status, Version,
+    connection::{ConnectionReader, UpgradeRequest},
+};
 
 pub use self::{request::IncomingRequest, response::OutgoingResponse};
 
@@ -288,7 +290,7 @@ where
         let server_addr = connection.local_addr()?;
         let client_addr = connection.peer_addr()?;
 
-        let (connection_rx, connection_tx) = ttpkit_io::Connection::builder()
+        let (connection_rx, connection_tx) = crate::connection::Connection::builder()
             .read_timeout(options.read_timeout)
             .write_timeout(options.write_timeout)
             .build(connection)

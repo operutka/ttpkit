@@ -2,10 +2,12 @@
 
 use std::ops::Deref;
 
-use ttpkit::header::HeaderField;
-use ttpkit_url::{IntoUrl, Url, UrlParseError};
-
-use crate::{Body, Method, Request, RequestHeader, Version, request::RequestBuilder};
+use crate::{
+    Body, Method, Request, RequestHeader, Version,
+    header::HeaderField,
+    request::RequestBuilder,
+    url::{IntoUrl, Url, UrlParseError},
+};
 
 /// Builder for outgoing HTTP requests.
 pub struct OutgoingRequestBuilder {

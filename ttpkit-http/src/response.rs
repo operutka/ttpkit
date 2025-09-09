@@ -2,9 +2,11 @@
 
 use bytes::BytesMut;
 use tokio_util::codec::{Decoder, Encoder};
-use ttpkit::{
+
+use crate::{
+    CodecError, Protocol, Version,
     header::{FieldIter, HeaderField, HeaderFieldValue, Iter},
-    response::{
+    ttpkit::response::{
         ResponseHeader as GenericResponseHeader,
         ResponseHeaderBuilder as GenericResponseHeaderBuilder,
         ResponseHeaderDecoder as GenericResponseHeaderDecoder,
@@ -12,9 +14,7 @@ use ttpkit::{
     },
 };
 
-use crate::{CodecError, Protocol, Version};
-
-pub use ttpkit::response::{ResponseHeaderDecoderOptions, StatusMessage};
+pub use crate::ttpkit::response::{ResponseHeaderDecoderOptions, StatusMessage};
 
 /// HTTP response status.
 #[repr(transparent)]

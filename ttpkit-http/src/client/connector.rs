@@ -9,12 +9,11 @@ use tokio::{
     io::{AsyncRead, AsyncWrite, ReadBuf},
     net::TcpStream,
 };
-use ttpkit_url::Url;
 
 #[cfg(feature = "tls-client")]
 use openssl::ssl::{SslConnector, SslMethod};
 
-use crate::{Error, Scheme};
+use crate::{Error, Scheme, url::Url};
 
 #[cfg(feature = "tls-client")]
 use crate::tls::{TlsConnector, TlsStream};

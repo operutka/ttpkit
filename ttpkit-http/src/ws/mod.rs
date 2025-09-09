@@ -21,9 +21,10 @@ use bytes::{Buf, BufMut, Bytes, BytesMut};
 use futures::{Sink, SinkExt, Stream, StreamExt, ready};
 use sha1::{Digest, Sha1};
 use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
-use ttpkit_io::Upgraded;
 
 use self::frame::{Frame, InvalidFrame};
+
+use crate::connection::Upgraded;
 
 #[cfg(feature = "server")]
 use crate::{Error, server::IncomingRequest};

@@ -11,14 +11,12 @@ use futures::{
 };
 use tokio::{io::AsyncRead, task::JoinHandle};
 use tokio_util::codec::{Decoder, FramedRead};
-use ttpkit::body::{
-    Body, ChunkedBodyDecoder, FixedSizeBodyDecoder, MessageBodyDecoder, SimpleBodyDecoder,
-};
-use ttpkit_io::ConnectionReader;
 
 use crate::{
     BaseError, CodecError, Error, ResponseHeader,
+    body::{Body, ChunkedBodyDecoder, FixedSizeBodyDecoder, MessageBodyDecoder, SimpleBodyDecoder},
     client::response::IncomingResponse,
+    connection::ConnectionReader,
     response::{Response, ResponseHeaderDecoder, ResponseHeaderDecoderOptions},
 };
 
