@@ -25,7 +25,10 @@ pub mod server;
 pub mod ws;
 
 #[cfg(any(feature = "client", feature = "server", feature = "ws"))]
-#[cfg_attr(docsrs, doc(cfg(any(feature = "client", feature = "server", feature = "ws"))))]
+#[cfg_attr(
+    docsrs,
+    doc(cfg(any(feature = "client", feature = "server", feature = "ws")))
+)]
 /// Connection abstractions.
 pub mod connection {
     pub use ttpkit_utils::io::{
