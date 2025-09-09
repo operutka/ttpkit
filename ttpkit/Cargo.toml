@@ -10,7 +10,7 @@ repository = "https://github.com/operutka/ttpkit"
 description = """
 Generic types for implementing protocols like HTTP, RTSP, SIP, etc.
 """
-keywords = ["http", "network", "protocol", "rtsp", "sip", "ttpkit"]
+keywords = ["http", "protocol", "rtsp", "sip", "ttpkit"]
 
 [features]
 default = []
