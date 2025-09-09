@@ -1,7 +1,16 @@
 [package]
 name = "ttpkit"
 version = "0.1.0"
+authors = ["Ondrej Perutka <perutka.ondrej@gmail.com>"]
 edition = "2024"
+readme = "README.md"
+license = "MIT"
+documentation = "https://docs.rs/ttpkit/"
+repository = "https://github.com/operutka/ttpkit"
+description = """
+Generic types for implementing protocols like HTTP, RTSP, SIP, etc.
+"""
+keywords = ["http", "network", "protocol", "rtsp", "sip", "ttpkit"]
 
 [features]
 default = []
@@ -18,4 +27,9 @@ default-features = false
 optional = true
 
 [dependencies.ttpkit-utils]
+version = "0.1"
 path = "../ttpkit-utils"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

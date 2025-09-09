@@ -1,7 +1,20 @@
 [package]
 name = "ttpkit-url"
 version = "0.1.0"
+authors = ["Ondrej Perutka <perutka.ondrej@gmail.com>"]
 edition = "2024"
+readme = "README.md"
+license = "MIT"
+documentation = "https://docs.rs/ttpkit-url/"
+repository = "https://github.com/operutka/ttpkit"
+description = """
+URL parsing and manipulation utilities for ttpkit.
+"""
+keywords = ["url", "ttpkit"]
 
 [dependencies]
 percent-encoding = "2"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

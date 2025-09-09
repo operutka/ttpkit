@@ -1,7 +1,16 @@
 [package]
 name = "ttpkit-auth"
 version = "0.1.0"
+authors = ["Ondrej Perutka <perutka.ondrej@gmail.com>"]
 edition = "2024"
+readme = "README.md"
+license = "MIT"
+documentation = "https://docs.rs/ttpkit-auth/"
+repository = "https://github.com/operutka/ttpkit"
+description = """
+Common HTTP authentication methods (Basic and Digest).
+"""
+keywords = ["authentication", "basic", "digest", "http", "ttpkit"]
 
 [dependencies]
 base64 = "0.22"
@@ -11,7 +20,13 @@ sha2 = "0.10"
 str-reader = "0.1"
 
 [dependencies.ttpkit]
+version = "0.1"
 path = "../ttpkit"
 
 [dependencies.ttpkit-utils]
+version = "0.1"
 path = "../ttpkit-utils"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

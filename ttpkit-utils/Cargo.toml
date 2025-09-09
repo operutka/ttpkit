@@ -1,7 +1,16 @@
 [package]
 name = "ttpkit-utils"
 version = "0.1.0"
+authors = ["Ondrej Perutka <perutka.ondrej@gmail.com>"]
 edition = "2024"
+readme = "README.md"
+license = "MIT"
+documentation = "https://docs.rs/ttpkit-utils/"
+repository = "https://github.com/operutka/ttpkit"
+description = """
+Various utilities for ttpkit.
+"""
+keywords = ["ttpkit"]
 
 [features]
 default = []
@@ -24,3 +33,7 @@ optional = true
 version = "1"
 features = ["io-util", "time"]
 optional = true
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
