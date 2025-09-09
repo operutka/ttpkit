@@ -1,5 +1,6 @@
 //! Error types.
 
+#[cfg(feature = "tokio-codec")]
 use std::{
     fmt::{self, Display, Formatter},
     io,
