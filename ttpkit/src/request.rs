@@ -443,6 +443,7 @@ impl Default for RequestHeaderEncoder {
 }
 
 #[cfg(feature = "tokio-codec")]
+#[cfg_attr(docsrs, doc(cfg(feature = "tokio-codec")))]
 impl<P, V, M> Encoder<&RequestHeader<P, V, M>> for RequestHeaderEncoder
 where
     P: AsRef<[u8]>,
@@ -587,6 +588,7 @@ where
 }
 
 #[cfg(feature = "tokio-codec")]
+#[cfg_attr(docsrs, doc(cfg(feature = "tokio-codec")))]
 impl<P, V, M> Decoder for RequestHeaderDecoder<P, V, M>
 where
     P: TryFrom<Bytes>,

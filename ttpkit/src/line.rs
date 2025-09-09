@@ -212,6 +212,7 @@ impl LineDecoder {
 }
 
 #[cfg(feature = "tokio-codec")]
+#[cfg_attr(docsrs, doc(cfg(feature = "tokio-codec")))]
 impl Decoder for LineDecoder {
     type Item = Bytes;
     type Error = CodecError;

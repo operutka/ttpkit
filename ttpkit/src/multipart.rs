@@ -140,6 +140,7 @@ impl MultipartEntityEncoder {
 }
 
 #[cfg(feature = "tokio-codec")]
+#[cfg_attr(docsrs, doc(cfg(feature = "tokio-codec")))]
 impl Encoder<&MultipartEntity> for MultipartEntityEncoder {
     type Error = CodecError;
 

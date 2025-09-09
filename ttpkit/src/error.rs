@@ -9,6 +9,7 @@ pub use crate::utils::error::Error;
 
 /// Encoding or decoding error.
 #[cfg(feature = "tokio-codec")]
+#[cfg_attr(docsrs, doc(cfg(feature = "tokio-codec")))]
 #[derive(Debug)]
 pub enum CodecError {
     IO(io::Error),

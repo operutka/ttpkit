@@ -1,3 +1,5 @@
+#![cfg_attr(docsrs, feature(doc_cfg))]
+
 //! # Text Transfer Protocol (TTP) toolkit.
 //!
 //! This crate provides generic types for implementing protocols like HTTP,

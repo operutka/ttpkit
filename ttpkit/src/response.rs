@@ -504,6 +504,7 @@ impl Default for ResponseHeaderEncoder {
 }
 
 #[cfg(feature = "tokio-codec")]
+#[cfg_attr(docsrs, doc(cfg(feature = "tokio-codec")))]
 impl<P, V> Encoder<&ResponseHeader<P, V>> for ResponseHeaderEncoder
 where
     P: AsRef<[u8]>,
@@ -645,6 +646,7 @@ where
 }
 
 #[cfg(feature = "tokio-codec")]
+#[cfg_attr(docsrs, doc(cfg(feature = "tokio-codec")))]
 impl<P, V> Decoder for ResponseHeaderDecoder<P, V>
 where
     P: TryFrom<Bytes>,

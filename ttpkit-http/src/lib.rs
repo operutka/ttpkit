@@ -1,3 +1,5 @@
+#![cfg_attr(docsrs, feature(doc_cfg))]
+
 //! HTTP 1.x implementation.
 
 #[cfg(feature = "server")]
@@ -11,15 +13,19 @@ pub mod request;
 pub mod response;
 
 #[cfg(feature = "client")]
+#[cfg_attr(docsrs, doc(cfg(feature = "client")))]
 pub mod client;
 
 #[cfg(feature = "server")]
+#[cfg_attr(docsrs, doc(cfg(feature = "server")))]
 pub mod server;
 
 #[cfg(feature = "ws")]
+#[cfg_attr(docsrs, doc(cfg(feature = "ws")))]
 pub mod ws;
 
 #[cfg(any(feature = "client", feature = "server", feature = "ws"))]
+#[cfg_attr(docsrs, doc(cfg(any(feature = "client", feature = "server", feature = "ws"))))]
 /// Connection abstractions.
 pub mod connection {
     pub use ttpkit_utils::io::{
@@ -48,6 +54,7 @@ pub use ttpkit::{
 };
 
 #[cfg(any(feature = "client", feature = "server"))]
+#[cfg_attr(docsrs, doc(cfg(any(feature = "client", feature = "server"))))]
 pub use ttpkit_url as url;
 
 pub use self::{
@@ -101,6 +108,7 @@ impl Error {
 
     /// Create a new error from a given custom error.
     #[cfg(feature = "server")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "server")))]
     pub fn from_other_with_response<T>(err: T) -> Self
     where
         T: ErrorToResponse + Send + Sync + 'static,
@@ -112,6 +120,7 @@ impl Error {
 
     /// Get error response (if supported).
     #[cfg(feature = "server")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "server")))]
     pub fn to_response(&self) -> Option<OutgoingResponse> {
         if let InnerError::ErrorWithResponse(err) = &self.inner {
             Some(err.to_response())
@@ -174,6 +183,7 @@ impl From<Error> for ttpkit::Error {
 
 /// Trait for errors that can generate an error response.
 #[cfg(feature = "server")]
+#[cfg_attr(docsrs, doc(cfg(feature = "server")))]
 pub trait ErrorToResponse: std::error::Error {
     /// Create a custom HTTP error response.
     fn to_response(&self) -> OutgoingResponse;

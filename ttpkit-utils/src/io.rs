@@ -1,3 +1,5 @@
+//! IO utilities.
+
 use std::{
     future::Future,
     io::{self, IoSlice},

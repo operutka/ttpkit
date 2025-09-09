@@ -30,9 +30,11 @@ use crate::connection::Upgraded;
 use crate::{Error, server::IncomingRequest};
 
 #[cfg(feature = "client")]
+#[cfg_attr(docsrs, doc(cfg(feature = "client")))]
 pub use self::client::{ClientHandshake, ClientHandshakeBuilder};
 
 #[cfg(feature = "server")]
+#[cfg_attr(docsrs, doc(cfg(feature = "server")))]
 pub use self::server::{FutureServer, ServerHandshake};
 
 /// Create a new WS key.
@@ -198,6 +200,7 @@ pub struct WebSocket {
 impl WebSocket {
     /// Create a new WS client.
     #[cfg(feature = "client")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "client")))]
     #[inline]
     pub fn client() -> ClientHandshakeBuilder {
         ClientHandshake::builder()
@@ -205,6 +208,7 @@ impl WebSocket {
 
     /// Create a new WS server.
     #[cfg(feature = "server")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "server")))]
     #[inline]
     pub fn server(request: IncomingRequest) -> Result<ServerHandshake, Error> {
         ServerHandshake::new(request)
