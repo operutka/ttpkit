@@ -22,6 +22,7 @@ use crate::{
     Error, Version,
     body::{Body, ChunkedStream},
     connection::ConnectionWriter,
+    header::HeaderFieldValue,
     response::{ResponseBuilder, ResponseHeaderEncoder},
     server::response::OutgoingResponse,
 };
@@ -174,16 +175,26 @@ impl OutgoingResponseSender {
     where
         IO: AsyncWrite + Unpin,
     {
-        // check if the response itself requests the connection to be closed
-        close |= response
+        let connection_tokens = response
             .get_header_field_value("connection")
-            .map(|connection| {
-                connection
-                    .split(|&b| b == b',')
-                    .map(|elem| elem.trim_ascii())
-                    .any(|elem| elem.eq_ignore_ascii_case(b"close"))
-            })
-            .unwrap_or(false);
+            .cloned()
+            .unwrap_or_else(|| HeaderFieldValue::from(""));
+
+        let mut connection_tokens = connection_tokens
+            .split(|&b| b == b',')
+            .map(|elem| elem.trim_ascii())
+            .filter(|elem| !elem.is_empty())
+            .map(str::from_utf8)
+            .filter_map(|res| res.ok())
+            .collect::<Vec<_>>();
+
+        // check if the response itself requests the connection to be closed
+        close |= connection_tokens
+            .iter()
+            .any(|elem| elem.eq_ignore_ascii_case("close"));
+
+        connection_tokens.retain(|elem| !elem.eq_ignore_ascii_case("close"));
+        connection_tokens.retain(|elem| !elem.eq_ignore_ascii_case("keep-alive"));
 
         let (header, b, _) = response.deconstruct();
 
@@ -206,10 +217,14 @@ impl OutgoingResponseSender {
             close = true;
         }
 
-        // indicate to the client that we'd like to close the connection (the
-        // header field is not valid for HTTP 1.0)
-        if close && version == Version::Version11 {
-            builder = builder.set_header_field(("Connection", "close"));
+        // indicate to the client that we'd like to close the connection
+        if close {
+            connection_tokens.push("close");
+        }
+
+        // the Connection header field is not valid for HTTP 1.0
+        if !connection_tokens.is_empty() && version == Version::Version11 {
+            builder = builder.set_header_field(("Connection", connection_tokens.join(", ")));
         }
 
         let header = builder.header();
