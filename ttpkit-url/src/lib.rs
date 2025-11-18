@@ -278,6 +278,15 @@ impl TryFrom<String> for Url {
     }
 }
 
+impl From<Url> for String {
+    fn from(url: Url) -> Self {
+        match Arc::try_unwrap(url.inner) {
+            Ok(inner) => inner.serialized,
+            Err(inner) => inner.serialized.clone(),
+        }
+    }
+}
+
 /// A common trait for types that can be converted into URL.
 pub trait IntoUrl {
     /// Convert the object into URL.
