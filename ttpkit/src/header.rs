@@ -668,10 +668,10 @@ impl HeaderFieldDecoder {
 
         let line = line.trim_ascii();
 
-        if let Some(max_length) = self.max_length {
-            if (self.buffer.len() + line.len()) > max_length {
-                return Err(Error::from_static_msg("header field length exceeded"));
-            }
+        if let Some(max_length) = self.max_length
+            && (self.buffer.len() + line.len()) > max_length
+        {
+            return Err(Error::from_static_msg("header field length exceeded"));
         }
 
         self.buffer.push(line);

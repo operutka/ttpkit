@@ -663,12 +663,12 @@ impl InternalRequestHeaderDecoder {
             let is_empty_line = line.is_empty();
 
             if let Some(field) = self.field_decoder.decode(line)? {
-                if let Some(max_fields) = self.max_header_fields {
-                    if header.header_fields.len() >= max_fields {
-                        return Err(Error::from_static_msg(
-                            "maximum number of header fields exceeded",
-                        ));
-                    }
+                if let Some(max_fields) = self.max_header_fields
+                    && header.header_fields.len() >= max_fields
+                {
+                    return Err(Error::from_static_msg(
+                        "maximum number of header fields exceeded",
+                    ));
                 }
 
                 header.header_fields.add(field);

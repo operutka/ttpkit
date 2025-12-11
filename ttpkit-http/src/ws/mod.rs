@@ -408,12 +408,12 @@ impl Stream for WebSocket {
         match ready!(self.poll_next_inner(cx)) {
             Some(Ok(msg)) => Poll::Ready(Some(Ok(msg))),
             Some(Err(err)) => {
-                if let Some(msg) = err.to_close_message() {
-                    if let Some(mut inner) = self.inner.take() {
-                        tokio::spawn(async move {
-                            let _ = inner.send(msg.into_frame()).await;
-                        });
-                    }
+                if let Some(msg) = err.to_close_message()
+                    && let Some(mut inner) = self.inner.take()
+                {
+                    tokio::spawn(async move {
+                        let _ = inner.send(msg.into_frame()).await;
+                    });
                 }
 
                 let err = match err {

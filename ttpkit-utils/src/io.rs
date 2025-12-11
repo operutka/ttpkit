@@ -263,10 +263,10 @@ impl ConnectionContext {
                     .set(Some(tokio::time::sleep(timeout)));
             }
 
-            if let Some(timeout) = this.read_timeout_delay.as_pin_mut() {
-                if timeout.poll(cx).is_ready() {
-                    return Err(io::Error::new(io::ErrorKind::TimedOut, "read timeout"));
-                }
+            if let Some(timeout) = this.read_timeout_delay.as_pin_mut()
+                && timeout.poll(cx).is_ready()
+            {
+                return Err(io::Error::new(io::ErrorKind::TimedOut, "read timeout"));
             }
         }
 
@@ -291,10 +291,10 @@ impl ConnectionContext {
                     .set(Some(tokio::time::sleep(timeout)));
             }
 
-            if let Some(timeout) = this.write_timeout_delay.as_pin_mut() {
-                if timeout.poll(cx).is_ready() {
-                    return Err(io::Error::new(io::ErrorKind::TimedOut, "write timeout"));
-                }
+            if let Some(timeout) = this.write_timeout_delay.as_pin_mut()
+                && timeout.poll(cx).is_ready()
+            {
+                return Err(io::Error::new(io::ErrorKind::TimedOut, "write timeout"));
             }
         }
 

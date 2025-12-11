@@ -421,16 +421,16 @@ impl InnerUrl {
 
         let netloc = &self.serialized[self.netloc_start..authority_end];
 
-        if !netloc.ends_with(']') {
-            if let Some(pos) = netloc.rfind(':') {
-                let port_start = pos + 1;
+        if !netloc.ends_with(']')
+            && let Some(pos) = netloc.rfind(':')
+        {
+            let port_start = pos + 1;
 
-                let port =
-                    u16::from_str(&netloc[port_start..]).map_err(|_| UrlParseError::InvalidPort)?;
+            let port =
+                u16::from_str(&netloc[port_start..]).map_err(|_| UrlParseError::InvalidPort)?;
 
-                self.port_start = Some(self.netloc_start + port_start);
-                self.port = Some(port);
-            }
+            self.port_start = Some(self.netloc_start + port_start);
+            self.port = Some(port);
         }
 
         Ok(())

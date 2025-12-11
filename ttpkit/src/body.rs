@@ -59,10 +59,10 @@ impl Body {
             BodyVariant::Bytes(data) => {
                 // let's stick to the contract and check the size even if we
                 // already have the whole body
-                if let Some(max_size) = max_size {
-                    if data.len() > max_size {
-                        return Err(io::Error::other("maximum body size exceeded"));
-                    }
+                if let Some(max_size) = max_size
+                    && data.len() > max_size
+                {
+                    return Err(io::Error::other("maximum body size exceeded"));
                 }
 
                 return Ok(data);
@@ -75,10 +75,10 @@ impl Body {
         while let Some(chunk) = stream.next().await.transpose()? {
             body.extend_from_slice(&chunk);
 
-            if let Some(max_size) = max_size {
-                if body.len() > max_size {
-                    return Err(io::Error::other("maximum body size exceeded"));
-                }
+            if let Some(max_size) = max_size
+                && body.len() > max_size
+            {
+                return Err(io::Error::other("maximum body size exceeded"));
             }
         }
 
@@ -96,10 +96,10 @@ impl Body {
         while let Some(chunk) = self.next().await.transpose()? {
             discarded += chunk.len();
 
-            if let Some(max_size) = max_size {
-                if discarded > max_size {
-                    return Err(io::Error::other("maximum body size exceeded"));
-                }
+            if let Some(max_size) = max_size
+                && discarded > max_size
+            {
+                return Err(io::Error::other("maximum body size exceeded"));
             }
         }
 
@@ -441,10 +441,10 @@ impl ChunkedBodyDecoder {
 
     /// Decode trailer part and drop all its content.
     fn decode_trailer_part(&mut self, data: &mut BytesMut) -> Result<Option<Bytes>, Error> {
-        if let Some(line) = self.line_decoder.decode(data)? {
-            if line.is_empty() {
-                self.state = ChunkedDecoderState::Completed;
-            }
+        if let Some(line) = self.line_decoder.decode(data)?
+            && line.is_empty()
+        {
+            self.state = ChunkedDecoderState::Completed;
         }
 
         Ok(None)

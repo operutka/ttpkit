@@ -146,10 +146,10 @@ impl LineDecoder {
                 return Ok(Some(line.freeze()));
             }
 
-            if let Some(max_length) = self.options.max_line_length {
-                if self.buffer.len() >= max_length {
-                    return Err(Error::from_static_msg("maximum line length exceeded"));
-                }
+            if let Some(max_length) = self.options.max_line_length
+                && self.buffer.len() >= max_length
+            {
+                return Err(Error::from_static_msg("maximum line length exceeded"));
             }
 
             self.buffer.put_u8(*first);
