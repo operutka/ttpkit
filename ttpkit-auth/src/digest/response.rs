@@ -5,6 +5,7 @@ use std::{
 };
 
 use str_reader::StringReader;
+use ttpkit::header::HeaderFieldValue;
 
 use crate::{
     DisplayEscaped, Error,
@@ -382,5 +383,11 @@ impl FromStr for DigestResponse {
         };
 
         Ok(res)
+    }
+}
+
+impl From<DigestResponse> for HeaderFieldValue {
+    fn from(response: DigestResponse) -> Self {
+        HeaderFieldValue::from(response.to_string())
     }
 }
