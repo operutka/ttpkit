@@ -14,11 +14,11 @@ keywords = ["authentication", "basic", "digest", "http", "ttpkit"]
 
 [dependencies]
 base64 = "0.22"
-digest = "0.10"
+digest = "0.11"
 md5 = "0.8"
-rand = "0.9"
-sha1 = "0.10"
-sha2 = "0.10"
+rand = "0.10"
+sha1 = "0.11"
+sha2 = "0.11"
 str-reader = "0.1"
 
 [dependencies.ttpkit]

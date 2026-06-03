@@ -4,7 +4,7 @@ mod challenge;
 mod response;
 
 use std::{
-    fmt::{self, Display, Formatter},
+    fmt::{self, Display, Formatter, Write},
     str::FromStr,
 };
 
@@ -64,15 +64,20 @@ impl DigestAlgorithm {
 
     /// Create a hash from a given input using the digest algorithm.
     pub fn digest(&self, input: &[u8]) -> String {
+        // helper function
+        fn digest_to_hex(digest: &[u8]) -> String {
+            let mut res = String::with_capacity(digest.len() << 1);
+            for &b in digest {
+                let _ = write!(res, "{b:02x}");
+            }
+            res
+        }
+
         match self {
-            Self::Md5 => format!("{:x}", md5::compute(input)),
-            Self::Md5_SESS => format!("{:x}", md5::compute(input)),
-            Self::Sha => format!("{:x}", Sha1::digest(input)),
-            Self::Sha_SESS => format!("{:x}", Sha1::digest(input)),
-            Self::Sha256 => format!("{:x}", Sha256::digest(input)),
-            Self::Sha256_SESS => format!("{:x}", Sha256::digest(input)),
-            Self::Sha512_256 => format!("{:x}", Sha512_256::digest(input)),
-            Self::Sha512_256_SESS => format!("{:x}", Sha512_256::digest(input)),
+            Self::Md5 | Self::Md5_SESS => digest_to_hex(&md5::compute(input)[..]),
+            Self::Sha | Self::Sha_SESS => digest_to_hex(&Sha1::digest(input)),
+            Self::Sha256 | Self::Sha256_SESS => digest_to_hex(&Sha256::digest(input)),
+            Self::Sha512_256 | Self::Sha512_256_SESS => digest_to_hex(&Sha512_256::digest(input)),
         }
     }
 }
