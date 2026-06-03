@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.1 (2026-06-03)
+
+* Update dependencies
+
 ## v0.2.0 (2025-12-11)
 
 * Implement full Digest support
