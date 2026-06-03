@@ -25,7 +25,7 @@ default = []
 server = ["dep:log", "dep:futures", "dep:tokio", "dep:trait-variant", "dep:ttpkit-url", "dep:ttpkit-utils"]
 client = ["dep:futures", "dep:tokio", "dep:ttpkit-url", "dep:ttpkit-utils"]
 tls-client = ["client", "openssl", "dep:tokio-openssl"]
-ws = ["dep:base64", "dep:futures", "dep:rand", "dep:sha-1", "dep:tokio", "dep:ttpkit-utils"]
+ws = ["dep:base64", "dep:futures", "dep:rand", "dep:sha1", "dep:tokio", "dep:ttpkit-utils"]
 
 [dependencies]
 bytes = "1"
@@ -47,11 +47,11 @@ version = "0.10"
 optional = true
 
 [dependencies.rand]
-version = "0.9"
+version = "0.10"
 optional = true
 
-[dependencies.sha-1]
-version = "0.10"
+[dependencies.sha1]
+version = "0.11"
 optional = true
 
 [dependencies.tokio]
